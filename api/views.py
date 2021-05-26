@@ -59,9 +59,12 @@ class FollowModelViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [IsAuthorOrReadOnly,
-                          permissions.IsAuthenticatedOrReadOnly]
+                          permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        author = get_object_or_404(User, pk=self.request.data['author'])
-        serializer.save(user=self.request.user, author=author)
+        following = get_object_or_404(User, pk=self.request.data['following'])
+        serializer.save(user=self.request.user, following=following)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        return Follow.objects.filter(user=self.request.user['pk'])

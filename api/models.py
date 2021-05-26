@@ -28,6 +28,17 @@ class Group(models.Model):
         db_table = 'posts_group'
         verbose_name = 'group'
         verbose_name_plural = 'Группа'
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["slug"],
+        #         name="unique slug",
+        #     )
+        # ]
+    # class Meta:
+    #     db_table = 'posts_group'
+    #     verbose_name = 'group'
+    #     verbose_name_plural = 'Группа'
+
 
 
 class Post(models.Model):
@@ -38,6 +49,14 @@ class Post(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='posts'
     )
+    group = models.ForeignKey(
+        'Group',
+        models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='группа',
+        help_text='Группа сообщений.',
+        related_name='group_posts')
 
     def __str__(self):
         return self.text
@@ -57,21 +76,23 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(
+    following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='подписчик',
         help_text='Пользователь, который подписывается.',
-        related_name='follower')
-    author = models.ForeignKey(
+        related_name='following')
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='автор',
         help_text='Пользователь, на которого подписываются.',
-        related_name='following')
+        related_name='follower')
 
     class Meta:
-        db_table = 'follow_author'
-        verbose_name = 'follow'
-        ordering = ('-author',)
-        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "following"],
+                name="unique user_following",
+            )
+        ]

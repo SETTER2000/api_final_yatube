@@ -29,5 +29,5 @@ class CommentSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('id', 'author', 'user')
+        fields = ('id', 'following', 'user')
         model = Follow
