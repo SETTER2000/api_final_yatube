@@ -11,34 +11,24 @@ class Group(models.Model):
         max_length=200,
         help_text='Придумайте краткое и ёмкое название для группы сообщений')
     slug = models.SlugField(
-        unique=True,
+        # unique=True,
+        blank=True,
+        null=True,
         max_length=100,
         verbose_name='url group',
         help_text='Краткое, уникальное слово, которое будет '
                   'видно в ссылке на страницу группы (часть URL)')
     description = models.TextField(
         'описание',
+        blank=True,
+        null=True,
         help_text='Опишите группу так, чтобы пользователь мог легко  '
                   'определиться с выбором группы для сообщения.')
-
-    def __str__(self):
-        return self.title
 
     class Meta:
         db_table = 'posts_group'
         verbose_name = 'group'
         verbose_name_plural = 'Группа'
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=["slug"],
-        #         name="unique slug",
-        #     )
-        # ]
-    # class Meta:
-    #     db_table = 'posts_group'
-    #     verbose_name = 'group'
-    #     verbose_name_plural = 'Группа'
-
 
 
 class Post(models.Model):
@@ -58,8 +48,11 @@ class Post(models.Model):
         help_text='Группа сообщений.',
         related_name='group_posts')
 
-    def __str__(self):
-        return self.text
+    class Meta:
+        db_table = 'posts_post'
+        ordering = ('-pub_date',)
+        verbose_name = 'post'
+        verbose_name_plural = 'сообщения'
 
 
 class Comment(models.Model):
@@ -79,20 +72,22 @@ class Follow(models.Model):
     following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='подписчик',
-        help_text='Пользователь, который подписывается.',
+        verbose_name='автор',
+        help_text='Пользователь, на которого подписываются.',
         related_name='following')
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='автор',
-        help_text='Пользователь, на которого подписываются.',
+        blank=True,
+        verbose_name='подписчик',
+        help_text='Кто подписался (Подписчик)',
         related_name='follower')
+
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "following"],
-                name="unique user_following",
+                fields=['user', 'following'],
+                name='unique user_following',
             )
         ]

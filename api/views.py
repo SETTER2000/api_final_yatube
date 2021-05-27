@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+from rest_framework import filters
 
 from .filters import PostFilter
 from .models import Comment, Follow, Group, Post, User
@@ -28,12 +29,18 @@ class PostModelViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def get_queryset(self):
+        group_id = self.request.query_params.get('group', None)
+        if group_id is not None:
+            #  через ORM отфильтровать объекты модели User
+            #  по значению параметра username, полученнго в запросе
+            return self.queryset.filter(group=group_id)
+
 
 class GroupModelViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthorOrReadOnly,
-                          permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         serializer.save()
@@ -58,13 +65,20 @@ class CommentModelViewSet(viewsets.ModelViewSet):
 class FollowModelViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
-    permission_classes = [IsAuthorOrReadOnly,
-                          permissions.IsAuthenticated]
+
+    # filter_backends = [filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend,filters.SearchFilter]
+    # filterset_fields = ['following',]
+    search_fields = ['user__username', ]
 
     def perform_create(self, serializer):
-        following = get_object_or_404(User, pk=self.request.data['following'])
-        serializer.save(user=self.request.user, following=following)
+        user = User.objects.filter(username=self.request.data['following'])
+        if not user.exists():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save(following=self.request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user['pk'])
+        return Follow.objects.filter(following=self.request.user)
