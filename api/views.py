@@ -36,7 +36,6 @@ class PostModelViewSet(viewsets.ModelViewSet):
         group_id = self.request.query_params.get('group', None)
         if group_id is not None:
             return self.queryset.filter(group=group_id)
-        return 1
 
 
 class GroupModelViewSet(viewsets.ModelViewSet):
