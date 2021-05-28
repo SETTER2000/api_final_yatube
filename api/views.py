@@ -6,11 +6,11 @@ from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.response import Response
 
 from .filters import PostFilter
+from .mixin import CreateListModelMixinViewSet
 from .models import Comment, Follow, Group, Post
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CommentSerializer, FollowSerializer, GroupSerializer,
                           PostSerializer)
-from .mixin import CreateListModelMixinViewSet
 
 User = get_user_model()
 
