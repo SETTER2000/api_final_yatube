@@ -10,6 +10,7 @@ from .models import Comment, Follow, Group, Post
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CommentSerializer, FollowSerializer, GroupSerializer,
                           PostSerializer)
+from .mixin import CreateListModelMixinViewSet
 
 User = get_user_model()
 
@@ -38,16 +39,6 @@ class PostModelViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(group=group_id)
 
 
-class GroupModelViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def perform_create(self, serializer):
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 class CommentModelViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -63,7 +54,17 @@ class CommentModelViewSet(viewsets.ModelViewSet):
         return Comment.objects.filter(post=self.kwargs['id'])
 
 
-class FollowModelViewSet(viewsets.ModelViewSet):
+class GroupModelViewSet(CreateListModelMixinViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class FollowModelViewSet(CreateListModelMixinViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]

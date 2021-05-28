@@ -10,7 +10,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SerializerMethodField()
+
+    def get_author(self, obj):
+        return obj.author.username
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
@@ -24,7 +27,10 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SerializerMethodField()
+
+    def get_author(self, obj):
+        return obj.author.username
 
     class Meta:
         fields = ('id', 'author', 'post', 'text', 'created')
